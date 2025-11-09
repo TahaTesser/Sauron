@@ -52,6 +52,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0435B91E2EC0C2E00058E43F /* Build configuration list for PBXNativeTarget "Sauron" */;
 			buildPhases = (
+				0435B9212EC0C2E10058E43F /* SwiftLint */,
 				0435B90F2EC0C2DF0058E43F /* Sources */,
 				0435B9102EC0C2DF0058E43F /* Frameworks */,
 				0435B9112EC0C2DF0058E43F /* Resources */,
@@ -94,6 +95,9 @@
 			);
 			mainGroup = 0435B90A2EC0C2DF0058E43F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0435B9742EC0E5510058E43F /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0435B9142EC0C2DF0058E43F /* Products */;
 			projectDirPath = "";
@@ -113,6 +117,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0435B9212EC0C2E10058E43F /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Prefer SwiftLint provided via Swift Package plugins (binary artifact).\nSWIFT_PACKAGE_DIR=\"${BUILD_DIR%Build/*}SourcePackages/artifacts\"\nSWIFTLINT_CMD=\"$SWIFT_PACKAGE_DIR/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos/swiftlint\"\n\nif test -f \"$SWIFTLINT_CMD\" 2>&1; then\n  \"$SWIFTLINT_CMD\" --config \"${PROJECT_DIR}/.swiftlint.yml\" --strict\nelif command -v swiftlint >/dev/null 2>&1; then\n  swiftlint --config \"${PROJECT_DIR}/.swiftlint.yml\" --strict\nelse\n  echo \"warning: SwiftLint not available. Add the Swift package https://github.com/SimplyDanny/SwiftLintPlugins or install via Homebrew.\"\nfi";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0435B90F2EC0C2DF0058E43F /* Sources */ = {
@@ -248,9 +273,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -261,8 +289,9 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tahatesser.Sauron;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tahatesser.sauron;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -278,9 +307,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -291,8 +323,9 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tahatesser.Sauron;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tahatesser.sauron;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -325,6 +358,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0435B9742EC0E5510058E43F /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.62.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = 0435B90B2EC0C2DF0058E43F /* Project object */;
 }

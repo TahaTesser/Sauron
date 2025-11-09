@@ -9,6 +9,9 @@ import SwiftUI
 
 @main
 struct SauronApp: App {
+    init() {
+        FontLoader.registerBundledFonts()
+    }
     var body: some Scene {
         WindowGroup {
             ContentView()
