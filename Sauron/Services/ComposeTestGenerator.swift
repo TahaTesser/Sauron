@@ -95,4 +95,3 @@ enum ComposeTestGenerator {
         return nil
     }
 }
-

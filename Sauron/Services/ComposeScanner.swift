@@ -35,9 +35,9 @@ enum ComposeScanner {
     }
 
     private static func parseComposeFile(absPath: URL, relPath: String) -> [ComposeComponent]? {
-        guard let h = try? FileHandle(forReadingFrom: absPath) else { return nil }
-        defer { try? h.close() }
-        guard let data = try? h.readToEnd(), let text = String(data: data, encoding: .utf8) else { return nil }
+        guard let fileHandle = try? FileHandle(forReadingFrom: absPath) else { return nil }
+        defer { try? fileHandle.close() }
+        guard let data = try? fileHandle.readToEnd(), let text = String(data: data, encoding: .utf8) else { return nil }
 
         var result: [ComposeComponent] = []
         var pendingAnnotations: [String] = []
@@ -105,7 +105,7 @@ enum ComposeScanner {
         }
         let pluginPatterns: [String] = [
             "com.android.compose.screenshot",
-            "libs.plugins.screenshot",
+            "libs.plugins.screenshot"
         ]
         for case let url as URL in enumerator {
             if url.hasDirectoryPath { continue }
@@ -122,4 +122,3 @@ enum ComposeScanner {
         return false
     }
 }
-

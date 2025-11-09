@@ -6,10 +6,10 @@ import UniformTypeIdentifiers
 struct UploadScreen: View {
     @State private var uploadedURLs: [URL] = []
     @State private var detectedItems: [PreviewSelectionItem] = []
-    @State private var selectedRoot: URL? = nil
+    @State private var selectedRoot: URL?
     @State private var showSelection: Bool = false
     @State private var isScanning: Bool = false
-    @State private var tip: String? = nil
+    @State private var tip: String?
     @State private var isDropTarget: Bool = false
 
     var body: some View {
@@ -17,14 +17,10 @@ struct UploadScreen: View {
             Brand.background
 
             VStack(spacing: 16) {
-                
                 Spacer()
-                
                 SauronTitle()
-
-
                 SauronPrimaryButton(title: "Upload", action: selectFiles)
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
                 Text("or drop a project folder here")
                     .font(.custom("IBMPlexMono-Bold", size: 12))
@@ -51,12 +47,15 @@ struct UploadScreen: View {
         }
         .onDrop(of: [.fileURL], isTargeted: $isDropTarget) { providers in
             guard let provider = providers.first else { return false }
-            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+            let typeIdentifier = UTType.fileURL.identifier
+            provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
                 var droppedURL: URL?
                 if let url = item as? URL {
                     droppedURL = url
-                } else if let data = item as? Data, let str = String(data: data, encoding: .utf8), let url = URL(string: str.trimmingCharacters(in: .whitespacesAndNewlines)) {
-                    droppedURL = url
+                } else if let data = item as? Data,
+                          let str = String(data: data, encoding: .utf8) {
+                    let trimmed = str.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if let url = URL(string: trimmed) { droppedURL = url }
                 }
                 if let url = droppedURL, isDirectory(url) {
                     DispatchQueue.main.async {
@@ -93,8 +92,14 @@ struct UploadScreen: View {
         Task.detached(priority: .userInitiated) {
             let comps = ComposeScanner.detectComponents(at: root)
             let hasPlugin = ComposeScanner.hasComposeScreenshotPlugin(at: root)
-            let items = comps.map { c in
-                PreviewSelectionItem(name: c.name, filePath: c.filePath, isSelected: false, hasPreview: c.hasPreview, previewAnnotations: c.previewAnnotations)
+            let items = comps.map { component in
+                PreviewSelectionItem(
+                    name: component.name,
+                    filePath: component.filePath,
+                    isSelected: false,
+                    hasPreview: component.hasPreview,
+                    previewAnnotations: component.previewAnnotations
+                )
             }
             let tipText: String? = hasPlugin ? nil : "Compose Preview Screenshot Testing setup is missing. Follow https://developer.android.com/studio/preview/compose-screenshot-testing"
             await MainActor.run {

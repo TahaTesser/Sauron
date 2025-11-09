@@ -66,7 +66,7 @@ struct PreviewSelectionScreen: View {
     }
 
     private func generate() {
-        let selected = items.enumerated().compactMap { idx, it -> ComposeComponent? in
+        let selected = items.compactMap { it -> ComposeComponent? in
             guard it.isSelected else { return nil }
             return ComposeComponent(
                 name: it.name,
