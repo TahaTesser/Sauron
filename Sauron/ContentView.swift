@@ -9,7 +9,9 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        UploadScreen()
+        NavigationStack { UploadScreen() }
+            .background(WindowConfigurator())
+            .ignoresSafeArea()
     }
 }
 

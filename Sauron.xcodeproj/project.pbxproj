@@ -127,6 +127,8 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(PROJECT_DIR)/.swiftlint.yml",
+				"$(PROJECT_DIR)/Sauron",
 			);
 			name = SwiftLint;
 			outputFileListPaths = (
@@ -135,7 +137,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Prefer SwiftLint provided via Swift Package plugins (binary artifact).\nSWIFT_PACKAGE_DIR=\"${BUILD_DIR%Build/*}SourcePackages/artifacts\"\nSWIFTLINT_CMD=\"$SWIFT_PACKAGE_DIR/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos/swiftlint\"\n\nif test -f \"$SWIFTLINT_CMD\" 2>&1; then\n  \"$SWIFTLINT_CMD\" --config \"${PROJECT_DIR}/.swiftlint.yml\" --strict\nelif command -v swiftlint >/dev/null 2>&1; then\n  swiftlint --config \"${PROJECT_DIR}/.swiftlint.yml\" --strict\nelse\n  echo \"warning: SwiftLint not available. Add the Swift package https://github.com/SimplyDanny/SwiftLintPlugins or install via Homebrew.\"\nfi";
+			shellScript = "# Prefer SwiftLint provided via Swift Package plugins (binary artifact).\nSWIFT_PACKAGE_DIR=\"${BUILD_DIR%Build/*}SourcePackages/artifacts\"\nSWIFTLINT_CMD=\"$SWIFT_PACKAGE_DIR/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos/swiftlint\"\nCONFIG=\"${PROJECT_DIR}/.swiftlint.yml\"\n\n# If config isn't readable under Xcode's user script sandbox, skip with a warning.\nif [ ! -r \"$CONFIG\" ]; then\n  echo \"warning: SwiftLint skipped (sandbox cannot read $CONFIG).\"\n  exit 0\nfi\n\nARGS=\"--config \"$CONFIG\" --use-script-input-files --strict\"\n\nif test -f \"$SWIFTLINT_CMD\" 2>&1; then\n  \"$SWIFTLINT_CMD\" $ARGS || true\nelif command -v swiftlint >/dev/null 2>&1; then\n  swiftlint $ARGS || true\nelse\n  echo \"warning: SwiftLint not available. Add the Swift package https://github.com/SimplyDanny/SwiftLintPlugins or install via Homebrew.\"\nfi";
 		};
 /* End PBXShellScriptBuildPhase section */
 

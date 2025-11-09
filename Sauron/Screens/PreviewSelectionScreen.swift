@@ -2,12 +2,14 @@ import SwiftUI
 
 // MARK: - Preview Selection Screen
 struct PreviewSelectionScreen: View {
+    let root: URL
     let directory: String
     @State var items: [PreviewSelectionItem]
     let tip: String?
 
-    init(directory: String, items: [PreviewSelectionItem], tip: String?) {
-        self.directory = directory
+    init(root: URL, items: [PreviewSelectionItem], tip: String?) {
+        self.root = root
+        self.directory = root.lastPathComponent
         self._items = State(initialValue: items)
         self.tip = tip
     }
@@ -36,16 +38,19 @@ struct PreviewSelectionScreen: View {
                     }
 
                     Button(action: toggleSelectAll, label: {
-                        Text("\(items.allSatisfy { $0.isSelected } ? \"[x]\" : \"[ ]\")  Select all")
+                        Text("\(items.allSatisfy { $0.isSelected } ? "[x]" : "[ ]")  Select all")
                             .font(.custom("IBMPlexMono-Bold", size: 14))
                             .foregroundColor(Brand.accent)
                     })
                     .buttonStyle(.plain)
 
-                    Text("Tip: \(tip?.isEmpty == false ? tip! : \"<placeholder>\")")
+                    Text("Tip: \(tip?.isEmpty == false ? tip! : "<placeholder>")")
                         .font(.custom("IBMPlexMono-Bold", size: 14))
                         .foregroundColor(Brand.accent)
                         .padding(.top, 8)
+
+                    SauronPrimaryButton(title: "Generate Tests", action: generate)
+                        .buttonStyle(.plain)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -59,6 +64,26 @@ struct PreviewSelectionScreen: View {
         let target = !items.allSatisfy { $0.isSelected }
         for index in items.indices { items[index].isSelected = target }
     }
+
+    private func generate() {
+        let selected = items.enumerated().compactMap { idx, it -> ComposeComponent? in
+            guard it.isSelected else { return nil }
+            return ComposeComponent(
+                name: it.name,
+                filePath: it.filePath,
+                line: 0,
+                hasPreview: it.hasPreview,
+                previewAnnotations: it.previewAnnotations
+            )
+        }
+        let result = ComposeTestGenerator.generateTests(root: root, components: selected)
+        // Basic feedback to console for now; UI notification can be added later.
+        if result.created.isEmpty {
+            print("Nothing to generate (files already exist) or no previews.")
+        } else {
+            print("Generated screenshot tests:\n\t" + result.created.joined(separator: "\n\t"))
+        }
+    }
 }
 // MARK: - Row component
 private struct PreviewRow: View {
@@ -66,7 +91,7 @@ private struct PreviewRow: View {
     var body: some View {
         Button(action: { item.isSelected.toggle() }, label: {
             VStack(alignment: .leading, spacing: 6) {
-                Text("\(item.isSelected ? \"[x]\" : \"[ ]\")  \(item.name)")
+                Text("\(item.isSelected ? "[x]" : "[ ]")  \(item.name)")
                     .font(.custom("IBMPlexMono-Bold", size: 14))
                     .foregroundColor(Brand.accent)
                 Text("    \(item.filePath)")
@@ -88,6 +113,6 @@ private struct PreviewRow: View {
         PreviewSelectionItem(name: "Preview Name", filePath: "file_path.kt"),
         PreviewSelectionItem(name: "Preview Name", filePath: "file_path.kt")
     ]
-    return PreviewSelectionScreen(directory: "<directory>", items: demo, tip: "<placeholder>")
+    return PreviewSelectionScreen(root: URL(fileURLWithPath: "/path/to/project"), items: demo, tip: "<placeholder>")
         .frame(width: 800, height: 600)
 }
