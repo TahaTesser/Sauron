@@ -92,7 +92,8 @@ struct UploadScreen: View {
         Task.detached(priority: .userInitiated) {
             let comps = ComposeScanner.detectComponents(at: root)
             let hasPlugin = ComposeScanner.hasComposeScreenshotPlugin(at: root)
-            let items = comps.map { component in
+            let previewComps = comps.filter { $0.hasPreview }
+            let items = previewComps.map { component in
                 PreviewSelectionItem(
                     name: component.name,
                     filePath: component.filePath,
@@ -108,7 +109,7 @@ struct UploadScreen: View {
                 self.isScanning = false
                 self.showSelection = true
             }
-            if hasAccess { root.stopAccessingSecurityScopedResource() }
+            // Don't stop security access here - PreviewSelectionScreen needs it for file writing
         }
     }
 

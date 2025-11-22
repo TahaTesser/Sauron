@@ -27,6 +27,13 @@ enum ComposeScanner {
             if url.pathExtension != "kt" { continue }
 
             let relPath = url.path.replacingOccurrences(of: root.path + "/", with: "")
+
+            if relPath.contains("/src/screenshotTest/") ||
+                relPath.contains("/src/androidTest/") ||
+                relPath.contains("/src/test/") {
+                continue
+            }
+
             if let fileComponents = parseComposeFile(absPath: url, relPath: relPath) {
                 components.append(contentsOf: fileComponents)
             }
@@ -42,12 +49,16 @@ enum ComposeScanner {
         var result: [ComposeComponent] = []
         var pendingAnnotations: [String] = []
         var lineNumber = 0
+        var inAnnotationBlock = false
 
         text.enumerateLines { line, _ in
             lineNumber += 1
             let trimmed = line.trimmingCharacters(in: .whitespaces)
+
             if trimmed.isEmpty {
-                pendingAnnotations.removeAll()
+                if !inAnnotationBlock {
+                    pendingAnnotations.removeAll()
+                }
                 return
             }
 
@@ -55,17 +66,27 @@ enum ComposeScanner {
             let containsPreview = trimmed.contains("@Preview")
 
             if trimmed.hasPrefix("@") {
+                if !inAnnotationBlock {
+                    inAnnotationBlock = true
+                }
                 pendingAnnotations.append(trimmed)
             } else if containsComposable || containsPreview {
+                if !inAnnotationBlock {
+                    inAnnotationBlock = true
+                }
                 pendingAnnotations.append(trimmed)
             }
 
             if let name = functionName(in: trimmed) {
-                if !containsComposable && !pendingAnnotations.contains(where: { $0.hasPrefix("@Composable") }) {
+                let hasComposableAnnotationOnLine = containsComposable
+                let hasComposableInPending = pendingAnnotations.contains(where: { $0.contains("@Composable") })
+                if !hasComposableAnnotationOnLine && !hasComposableInPending {
                     pendingAnnotations.removeAll()
+                    inAnnotationBlock = false
                     return
                 }
-                let previews = pendingAnnotations.filter { $0.hasPrefix("@Preview") }
+
+                let previews = pendingAnnotations.filter { $0.contains("@Preview") }
                 result.append(ComposeComponent(
                     name: name,
                     filePath: relPath.replacingOccurrences(of: "\\", with: "/"),
@@ -74,8 +95,10 @@ enum ComposeScanner {
                     previewAnnotations: previews
                 ))
                 pendingAnnotations.removeAll()
+                inAnnotationBlock = false
             } else if !trimmed.hasPrefix("@") {
                 pendingAnnotations.removeAll()
+                inAnnotationBlock = false
             }
         }
         return result

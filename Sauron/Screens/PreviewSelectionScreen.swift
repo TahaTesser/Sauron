@@ -6,6 +6,11 @@ struct PreviewSelectionScreen: View {
     let directory: String
     @State var items: [PreviewSelectionItem]
     let tip: String?
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var hasSecurityAccess: Bool = false
+    @State private var navigateToResults: Bool = false
+    @State private var selectedComponents: [ComposeComponent] = []
 
     init(root: URL, items: [PreviewSelectionItem], tip: String?) {
         self.root = root
@@ -58,6 +63,24 @@ struct PreviewSelectionScreen: View {
             .padding(.bottom, 24)
         }
         .ignoresSafeArea()
+        .alert("Test Generation", isPresented: $showAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(alertMessage)
+        }
+        .onAppear {
+            hasSecurityAccess = root.startAccessingSecurityScopedResource()
+            print("[PreviewSelectionScreen] Security access started: \(hasSecurityAccess)")
+        }
+        .onDisappear {
+            if hasSecurityAccess {
+                root.stopAccessingSecurityScopedResource()
+                print("[PreviewSelectionScreen] Security access stopped")
+            }
+        }
+        .navigationDestination(isPresented: $navigateToResults) {
+            GenerationResultScreen(root: root, components: selectedComponents)
+        }
     }
 
     private func toggleSelectAll() {
@@ -76,13 +99,15 @@ struct PreviewSelectionScreen: View {
                 previewAnnotations: it.previewAnnotations
             )
         }
-        let result = ComposeTestGenerator.generateTests(root: root, components: selected)
-        // Basic feedback to console for now; UI notification can be added later.
-        if result.created.isEmpty {
-            print("Nothing to generate (files already exist) or no previews.")
-        } else {
-            print("Generated screenshot tests:\n\t" + result.created.joined(separator: "\n\t"))
+
+        guard !selected.isEmpty else {
+            alertMessage = "Please select at least one preview to generate tests."
+            showAlert = true
+            return
         }
+
+        selectedComponents = selected
+        navigateToResults = true
     }
 }
 // MARK: - Row component
